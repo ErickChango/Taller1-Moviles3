@@ -1,4 +1,4 @@
-name: taller1
+name: flutter_application_10
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0+1
@@ -17,3 +17,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/movies.json

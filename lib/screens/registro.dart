@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'catalogo.dart';
 import 'login.dart';
 
 const _primary = Color(0xFF7C3AED);

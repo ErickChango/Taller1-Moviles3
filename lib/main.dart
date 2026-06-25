@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/bienvenida.dart';
+import 'screens/catalogo.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://mvmilqyfqwujofopwyec.supabase.co',
+    anonKey: 'sb_publishable_G3VXFHkbyHnpNEIS61Se9g_AOMwXYFi',
+  );
+
   runApp(const MyApp());
 }
 
@@ -10,6 +19,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Verifica si ya existe una sesión activa al abrir la app
+    final session = Supabase.instance.client.auth.currentSession;
+    final userAge = (Supabase.instance.client.auth.currentUser
+            ?.userMetadata?['edad'] as num?)
+        ?.toInt() ?? 0;
+
     return MaterialApp(
       title: 'StreamFlix',
       debugShowCheckedModeBanner: false,
@@ -24,7 +39,10 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const WelcomeScreen(),
+      // Si hay sesión activa va al catálogo, si no a la bienvenida
+      home: session != null
+          ? CatalogScreen(userAge: userAge)
+          : const WelcomeScreen(),
     );
   }
 }

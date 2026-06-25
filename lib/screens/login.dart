@@ -28,36 +28,60 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
+    if (_emailCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
+      _showDialog('Campos incompletos', 'Ingresá tu correo y contraseña.');
+      return;
+    }
+
     setState(() => _loading = true);
     try {
       final AuthResponse res = await Supabase.instance.client.auth.signInWithPassword(
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw Exception('Tiempo de espera agotado. Verificá tu conexión a internet.'),
       );
       final Session? session = res.session;
       final User? user = res.user;
-      if (session == null || user == null) throw AuthException('No se pudo iniciar sesión.');
-      final int userAge = (user.userMetadata?['edad'] as num?)?.toInt() ?? 0;
+
       if (!mounted) return;
+
+      if (session == null || user == null) {
+        _showDialog(
+          'Email no confirmado',
+          'Revisá tu correo y confirmá tu cuenta antes de iniciar sesión.',
+        );
+        return;
+      }
+
+      final int userAge = (user.userMetadata?['edad'] as num?)?.toInt() ?? 0;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => CatalogScreen(userAge: userAge)),
       );
     } on AuthException catch (e) {
       if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(e.message),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
-        ),
-      );
+      _showDialog('Error', e.message);
+    } catch (e) {
+      if (!mounted) return;
+      _showDialog('Error inesperado', e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+        ],
+      ),
+    );
   }
 
   @override

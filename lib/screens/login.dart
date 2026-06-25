@@ -1,51 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'login.dart';
+import 'catalogo.dart';
+import 'registro.dart';
 
 const _primary = Color(0xFF7C3AED);
 const _secondary = Color(0xFFEC4899);
 const _fieldBg = Color(0xFF1E1E2E);
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  final _nameCtrl = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
-  final _ageCtrl = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
-    _ageCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _register() async {
+  Future<void> _login() async {
     setState(() => _loading = true);
     try {
-      final AuthResponse res = await Supabase.instance.client.auth.signUp(
+      final AuthResponse res = await Supabase.instance.client.auth.signInWithPassword(
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text,
-        data: {
-          'nick': _nameCtrl.text.trim(),
-          'edad': int.tryParse(_ageCtrl.text.trim()) ?? 0,
-        },
       );
-      final Session? _ = res.session;
+      final Session? session = res.session;
+      final User? user = res.user;
+      if (session == null || user == null) throw AuthException('No se pudo iniciar sesión.');
+      final int userAge = (user.userMetadata?['edad'] as num?)?.toInt() ?? 0;
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => CatalogScreen(userAge: userAge)),
       );
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -85,23 +81,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   colors: [_primary, _secondary],
                 ).createShader(b),
                 child: const Text(
-                  'Crear cuenta',
+                  'Iniciar sesión',
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
               const SizedBox(height: 6),
-              const Text('Únete a StreamFlix hoy 🎬',
+              const Text('Bienvenido de nuevo 👋',
                   style: TextStyle(color: Colors.white54, fontSize: 15)),
               const SizedBox(height: 40),
 
-              _buildField(controller: _nameCtrl, label: 'Nombre completo', icon: Icons.person_outline),
-              const SizedBox(height: 18),
               _buildField(controller: _emailCtrl, label: 'Correo electrónico',
                   icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
               const SizedBox(height: 18),
-              _buildField(controller: _ageCtrl, label: 'Edad',
-                  icon: Icons.cake_outlined, keyboardType: TextInputType.number),
-              const SizedBox(height: 18),
+
               _buildField(
                 controller: _passCtrl,
                 label: 'Contraseña',
@@ -112,30 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: () => setState(() => _obscure = !_obscure),
                 ),
               ),
-              const SizedBox(height: 12),
-
-              // Info edad
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: _primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: _primary.withValues(alpha: 0.3)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Color(0xFF7C3AED), size: 18),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Tu edad define qué películas puedes ver. El contenido +18 solo está disponible para mayores de edad.',
-                        style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
               SizedBox(
                 width: double.infinity,
@@ -145,14 +114,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: ElevatedButton(
-                    onPressed: _register,
+                    onPressed: _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('Crear cuenta',
+                    child: const Text('Entrar',
                         style: TextStyle(fontSize: 17, color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
@@ -162,13 +131,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('¿Ya tienes cuenta? ', style: TextStyle(color: Colors.white54)),
+                  const Text('¿No tienes cuenta? ', style: TextStyle(color: Colors.white54)),
                   GestureDetector(
                     onTap: () => Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
                     ),
-                    child: const Text('Inicia sesión',
+                    child: const Text('Regístrate',
                         style: TextStyle(color: _primary, fontWeight: FontWeight.bold)),
                   ),
                 ],

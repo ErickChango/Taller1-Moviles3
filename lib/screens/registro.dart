@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'catalogo.dart';
 import 'login.dart';
 
 const _primary = Color(0xFF7C3AED);
@@ -31,12 +30,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _register() {
-    final int age = int.tryParse(_ageCtrl.text.trim()) ?? 18;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => CatalogScreen(userAge: age)),
-    );
+  Future<void> _register() async {
+    setState(() => _loading = true);
+    try {
+      final AuthResponse res = await Supabase.instance.client.auth.signUp(
+        email: _emailCtrl.text.trim(),
+        password: _passCtrl.text,
+        data: {
+          'nick': _nameCtrl.text.trim(),
+          'edad': int.tryParse(_ageCtrl.text.trim()) ?? 0,
+        },
+      );
+      final Session? _ = res.session;
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(e.message),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+          ],
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override

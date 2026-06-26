@@ -31,6 +31,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
+    // Validaciones básicas
+    if (_nameCtrl.text.trim().isEmpty ||
+        _emailCtrl.text.trim().isEmpty ||
+        _passCtrl.text.isEmpty ||
+        _ageCtrl.text.trim().isEmpty) {
+      _showDialog('Campos incompletos', 'Por favor completá todos los campos.');
+      return;
+    }
+
     setState(() => _loading = true);
     try {
       final AuthResponse res = await Supabase.instance.client.auth.signUp(
@@ -40,28 +49,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'nick': _nameCtrl.text.trim(),
           'edad': int.tryParse(_ageCtrl.text.trim()) ?? 0,
         },
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw Exception('Tiempo de espera agotado. Verificá tu conexión a internet.'),
       );
-      final Session? _ = res.session;
+
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+
+      if (res.session != null) {
+        // Registro exitoso y sesión activa (email confirm desactivado)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      } else if (res.user != null) {
+        // Registro exitoso pero requiere confirmación de email
+        _showDialog(
+          '¡Cuenta creada!',
+          'Te enviamos un correo de confirmación a ${_emailCtrl.text.trim()}. '
+          'Confirmá tu email y luego iniciá sesión.',
+          onOk: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          ),
+        );
+      } else {
+        _showDialog('Error', 'No se pudo crear la cuenta. Intentá de nuevo.');
+      }
     } on AuthException catch (e) {
       if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(e.message),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
-        ),
-      );
+      _showDialog('Error', e.message);
+    } catch (e) {
+      if (!mounted) return;
+      _showDialog('Error inesperado', e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _showDialog(String title, String message, {VoidCallback? onOk}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onOk?.call();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

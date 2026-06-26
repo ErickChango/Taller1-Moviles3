@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/movies_data.dart';
 import '../models/movie.dart';
 import 'detalle_pelicula.dart';
+import 'bienvenida.dart';
 
 class CatalogScreen extends StatelessWidget {
   final int userAge;
@@ -35,7 +37,7 @@ class CatalogScreen extends StatelessWidget {
         ),
         actions: [
           Container(
-            margin: const EdgeInsets.only(right: 16),
+            margin: const EdgeInsets.only(right: 8),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: _ageBadgeColor,
@@ -43,6 +45,20 @@ class CatalogScreen extends StatelessWidget {
             ),
             child: Text(_ageLabel,
                 style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white70),
+            tooltip: 'Cerrar sesión',
+            onPressed: () async {
+              await Supabase.instance.client.auth.signOut();
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                  (_) => false,
+                );
+              }
+            },
           ),
         ],
       ),
@@ -124,7 +140,7 @@ class _FeaturedBanner extends StatelessWidget {
             child: Image.network(
               movie.image,
               fit: BoxFit.cover,
-              errorBuilder: (_, e, __) => Container(
+              errorBuilder: (_, e, _) => Container(
                 color: const Color(0xFF1E1E2E),
                 child: const Icon(Icons.movie, color: Colors.white12, size: 80),
               ),
@@ -242,7 +258,7 @@ class _MovieCard extends StatelessWidget {
                     height: 145,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, e, __) => Container(
+                    errorBuilder: (_, e, _) => Container(
                       height: 145,
                       color: const Color(0xFF2e2e2e),
                       child: const Icon(Icons.movie, color: Colors.white12),

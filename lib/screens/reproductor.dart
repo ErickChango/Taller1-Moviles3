@@ -54,7 +54,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     widget.movie.image,
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    errorBuilder: (_, e, _) => Container(
+                    errorBuilder: (_, e, __) => Container(
                       color: const Color(0xFF111111),
                       child: const Icon(Icons.movie, color: Colors.white12, size: 80),
                     ),

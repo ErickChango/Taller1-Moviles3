@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Verifica si ya existe una sesión activa al abrir la app
+
     final session = Supabase.instance.client.auth.currentSession;
     final userAge = (Supabase.instance.client.auth.currentUser
             ?.userMetadata?['edad'] as num?)
@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      // Si hay sesión activa va al catálogo, si no a la bienvenida
+
       home: session != null
           ? CatalogScreen(userAge: userAge)
           : const WelcomeScreen(),

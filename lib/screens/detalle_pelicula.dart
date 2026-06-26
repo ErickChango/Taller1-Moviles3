@@ -158,7 +158,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   Image.network(
                     widget.movie.image,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, e, _) => Container(
+                    errorBuilder: (_, e, __) => Container(
                       color: const Color(0xFF1E1E2E),
                       child: const Icon(Icons.movie, color: Colors.white12, size: 80),
                     ),

@@ -34,7 +34,7 @@ class TrailerScreen extends StatelessWidget {
                   'https://img.youtube.com/vi/${movie.trailerId}/hqdefault.jpg',
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  errorBuilder: (_, e, __) => Container(
+                  errorBuilder: (_, e, _) => Container(
                     color: const Color(0xFF1a1a1a),
                     child: const Icon(Icons.movie, color: Colors.white12, size: 80),
                   ),

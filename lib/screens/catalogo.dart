@@ -140,7 +140,7 @@ class _FeaturedBanner extends StatelessWidget {
             child: Image.network(
               movie.image,
               fit: BoxFit.cover,
-              errorBuilder: (_, e, _) => Container(
+              errorBuilder: (_, e, __) => Container(
                 color: const Color(0xFF1E1E2E),
                 child: const Icon(Icons.movie, color: Colors.white12, size: 80),
               ),
@@ -258,7 +258,7 @@ class _MovieCard extends StatelessWidget {
                     height: 145,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, e, _) => Container(
+                    errorBuilder: (_, e, __) => Container(
                       height: 145,
                       color: const Color(0xFF2e2e2e),
                       child: const Icon(Icons.movie, color: Colors.white12),
